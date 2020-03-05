@@ -9,6 +9,7 @@ class Webservice {
       String keyword, double latitude, double longitude) async {
     final url =
         UrlHelper.urlForPLaceKeywordAndLocation(keyword, latitude, longitude);
+    print('URL: $url');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);

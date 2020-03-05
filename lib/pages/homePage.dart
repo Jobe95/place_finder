@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:map_launcher/map_launcher.dart' as launcher;
 import 'package:place_finder/viewmodels/placeListViewModel.dart';
 import 'package:place_finder/viewmodels/placeViewModel.dart';
+import 'package:place_finder/widget/placeList.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -43,6 +45,23 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<void> _openMapsFor(PlaceViewModel vm) async {
+    if (await launcher.MapLauncher.isMapAvailable(launcher.MapType.google)) {
+      await launcher.MapLauncher.launchMap(
+          mapType: launcher.MapType.google,
+          coords: launcher.Coords(vm.latitude, vm.longitude),
+          title: vm.name,
+          description: vm.name);
+    } else if (await launcher.MapLauncher.isMapAvailable(
+        launcher.MapType.apple)) {
+      await launcher.MapLauncher.launchMap(
+          mapType: launcher.MapType.apple,
+          coords: launcher.Coords(vm.latitude, vm.longitude),
+          title: vm.name,
+          description: vm.name);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<PlaceListViewModel>(context);
@@ -51,6 +70,7 @@ class _HomePageState extends State<HomePage> {
         child: Stack(
           children: <Widget>[
             GoogleMap(
+              mapType: vm.mapType,
               markers: _getPlaceMarkers(vm.places),
               myLocationEnabled: true,
               onMapCreated: _onMapCreated,
@@ -84,6 +104,13 @@ class _HomePageState extends State<HomePage> {
                     child: FlatButton(
                       onPressed: () {
                         print('Hej');
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) => PlaceList(
+                            places: vm.places,
+                            onSelected: _openMapsFor,
+                          ),
+                        );
                       },
                       child: Text('Visa listan',
                           style: TextStyle(color: Colors.white)),
@@ -91,6 +118,16 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                 ),
+              ),
+            ),
+            Positioned(
+              top: 130,
+              right: 10,
+              child: FloatingActionButton(
+                onPressed: () {
+                  vm.toggleMapType();
+                },
+                child: Icon(Icons.map),
               ),
             ),
           ],

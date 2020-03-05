@@ -14,7 +14,7 @@ class Place {
   });
 
   factory Place.fromJSON(Map<String, dynamic> json) {
-    final location = json['geomatry']['location'];
+    final location = json['geometry']['location'];
     Iterable photos = json['photos'];
 
     return Place(
